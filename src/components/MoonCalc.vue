@@ -2,38 +2,47 @@
   <div class="container moon">
     <div class="row">
       <h1>Moon illumination</h1>
+      
+    </div>
+    <div class="row justify-content-end" >
+      <div class="col-3 text-right">
+        {{t('language')}} 
+      </div>  
+      <div class="col-3 locale-changer ">
+        <span @click="lang('it')" :class="{'selected': locale==='it'}">IT</span> | <span @click="lang('en')" :class="{'selected': locale==='en'}">EN</span>
+      </div>
     </div>
     <div class="row">
-      <label for="position" class="form-label">Position</label>
+      <label for="position" class="form-label">{{t('position')}}</label>
       <div class="input-group">
         <span class="input-group-text w-25" id="lat">Lat</span>
-        <input type="text" class="form-control" id="position-lat" aria-describedby="Latitude" v-model="lat" placeholder="North is positive">
+        <input type="text" class="form-control" id="position-lat" aria-describedby="Latitude" v-model="lat" :placeholder="[[t('lat')]]">
       </div>
       <div class="input-group mb-3">
         <span class="input-group-text w-25" id="lat">Lon</span>
-        <input type="text" class="form-control" id="position-lon" aria-describedby="Longitude" v-model="lon" placeholder="East is positive">
+        <input type="text" class="form-control" id="position-lon" aria-describedby="Longitude" v-model="lon" :placeholder="[[t('lon')]]">
       </div>
     </div>
     <div class="row">
-      <label for="ytt">Compute for:</label>
+      <label for="ytt">{{t('compute')}}</label>
       <div class="row justify-content-center">
         <div class="col">
-          <button class="btn btn-secondary" @click="moonM1W"> -1w</button>
+          <button class="btn btn-secondary" @click="moonM1W">{{t('m1w')}}</button>
         </div>
         <div class="col">
-          <button class="btn btn-secondary" @click="moonM1D"> -1d</button>
+          <button class="btn btn-secondary" @click="moonM1D">{{t('m1d')}}</button>
         </div>
         <div class="col">
-          <button class="btn btn-primary" @click="moonToday">Now</button>
+          <button class="btn btn-primary" @click="moonToday">{{t('today')}}</button>
         </div>
         <div class="col">
-          <button class="btn btn-secondary" @click="moonP1D">+1d</button>
+          <button class="btn btn-secondary" @click="moonP1D">{{t('p1d')}}</button>
         </div>
         <div class="col">
-          <button class="btn btn-secondary" @click="moonP1W">+1w</button>
+          <button class="btn btn-secondary" @click="moonP1W">{{t('p1w')}}</button>
         </div>
       </div>      
-      <label for="today">or choose the date:</label>
+      <label for="today">{{t('date')}}</label>
       <input type='date' id="calendar" v-model="datareq" @change="moon"> 
     </div>    
     <div class="row">
@@ -41,21 +50,25 @@
 
     </div>
     <div class="row d-flex ">
-      <h4 class="order-0">Illumination: {{ill}}</h4>
-      <h4 class="order-1">Phase: {{phs}} </h4>
-      <span :class="{'order-2' : riseset, 'order-3' : !riseset}">Rise: {{rise}} </span>
-      <span :class="{'order-2' : !riseset, 'order-3' : riseset}">Set: {{set}}</span>
+      <h4 class="order-0">{{t('ill')}} {{ill}}</h4>
+      <h4 class="order-1">{{t('phase')}} {{phs}} </h4>
+      <span :class="{'order-2' : riseset, 'order-3' : !riseset}">{{t('rise')}} {{rise}} </span>
+      <span :class="{'order-2' : !riseset, 'order-3' : riseset}">{{t('set')}} {{set}}</span>
     </div>
   </div>
 </template>
 
 <script>
-import SunCalc from 'suncalc';
+import SunCalc from 'suncalc2';
 import * as d3 from 'd3';
 import A from 'meeusjs'
+import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'MoonCalc',
+  setup() {
+    return useI18n()
+  },
   data() {
     return {
       width: 200,
@@ -64,7 +77,7 @@ export default {
       today: new Date().toISOString().split('T')[0],
       datareq: new Date().toISOString().split('T')[0],
       ill: '',
-      phs: '',
+      // phs: '',
       mooninfo: {},
       rise: '',
       transit: '',
@@ -72,10 +85,47 @@ export default {
       riseset: true
     }
   },
+  computed: {
+    phs() {
+      var text='';
+        if (this.mooninfo.phase < 0.03) {
+          text=this.t('new_moon');
+        } 
+        else if (this.mooninfo.phase < 0.22) {
+          text=this.t('waxing_crescent');
+        } 
+        else if (this.mooninfo.phase < 0.28) {
+          text=this.t('first_quarter');
+        } 
+        else if (this.mooninfo.phase < 0.47) {
+          text=this.t('waxing_gibbous');
+        } 
+        else if (this.mooninfo.phase < 0.53) {
+          text=this.t('full_moon');
+        } 
+        else if (this.mooninfo.phase < 0.72) {
+          text=this.t('waning_gibbous');
+        } 
+        else if (this.mooninfo.phase < 0.78) {
+          text=this.t('last_quarter');
+        } 
+        else if (this.mooninfo.phase < 0.97) {
+          text=this.t('waning_crescent');
+        } 
+        else {
+          text = this.t("new_moon");
+        }
+        return text;
+      }
+  },
   mounted() {
     this.moon();
   },
   methods: {
+    lang(l) {
+      this.locale=l;
+      this.moon();
+    },
     tomorrow() {
       const t = new Date(this.datareq);
       t.setDate(t.getDate()+1);
@@ -121,8 +171,8 @@ export default {
       var m = SunCalc.getMoonIllumination(o);
       var x = SunCalc.getMoonTimes(this.datareq, this.lat, this.lon);
       this.mooninfo = m;
-      this.rise = ('rise' in x) ? x.rise.toTimeString() : '---';
-      this.set = ('set' in x) ? x.set.toTimeString() : '---';
+      this.rise = ('rise' in x) ? this.d(x.rise, 'long') : '---';
+      this.set = ('set' in x) ? this.d(x.set, 'long') : '---';
       if (this.rise > this.set) {
         this.riseset=false;
       }
@@ -130,7 +180,6 @@ export default {
         this.riseset=true;
       }
       this.ill = (m.fraction*100).toFixed(1) + "%";
-      this.phs = this.moonPhaseText();
       var dd = new Date(this.datareq);
       var jdo = new A.JulianDay(dd);
       //console.log("JD: ", jdo);
@@ -187,39 +236,8 @@ export default {
       t.setDate(t.getDate()+7);
       this.datareq=t.toISOString().split('T')[0];
       this.moon();
-    },
-    moonPhaseText() {
-      var text='';
-      if (this.mooninfo.phase < 0.03) {
-        text='New Moon';
-      } 
-      else if (this.mooninfo.phase < 0.22) {
-        text='Waxing Crescent';
-      } 
-      else if (this.mooninfo.phase < 0.28) {
-        text='First Quarter';
-      } 
-      else if (this.mooninfo.phase < 0.47) {
-        text='Waxing Gibbous';
-      } 
-      else if (this.mooninfo.phase < 0.53) {
-        text='Full Moon';
-      } 
-      else if (this.mooninfo.phase < 0.72) {
-        text='Waning Gibbous';
-      } 
-      else if (this.mooninfo.phase < 0.78) {
-        text='Last Quarter';
-      } 
-      else if (this.mooninfo.phase < 0.97) {
-        text='Waning Crescent';
-      } 
-      else {
-        text = "New Moon";
-      }
-      return text;
     }
-  } 
+  }
 }
 </script>
 
@@ -229,5 +247,12 @@ export default {
   border: 1px solid #bfbfbf;
   max-width: 500px;
   justify-content: center;
+}
+.locale-changer {
+  cursor: pointer;
+  color: #666;
+}
+.selected {
+  color: initial;
 }
 </style>
