@@ -6,7 +6,7 @@ const loadMessages = () => {
 }
 
 export default createI18n({
-  locale: 'en',
+  locale: 'it',
   fallbackLocale: 'en',
   messages: loadMessages(),
   datetimeFormats: {

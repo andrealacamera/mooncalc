@@ -1,53 +1,55 @@
 <template>
   <div class="container moon">
     <div class="row">
-      <h1>Moon illumination</h1>
+      <h1>MoonCalc</h1>
       
     </div>
     <div class="row justify-content-end" >
-      <div class="col-3 text-right">
+      <div class="col-auto">
         {{t('language')}} 
       </div>  
-      <div class="col-3 locale-changer ">
-        <span @click="lang('it')" :class="{'selected': locale==='it'}">IT</span> | <span @click="lang('en')" :class="{'selected': locale==='en'}">EN</span>
+      <div class="col-auto locale-changer text-right">
+        <span @click="lang('it')" :class="{'selected bg-primary': locale==='it'}">IT</span> | <span @click="lang('en')" :class="{'selected bg-primary': locale==='en'}">EN</span>
       </div>
     </div>
     <div class="row">
       <label for="position" class="form-label">{{t('position')}}</label>
       <div class="input-group">
         <span class="input-group-text w-25" id="lat">Lat</span>
-        <input type="text" class="form-control" id="position-lat" aria-describedby="Latitude" v-model="lat" :placeholder="[[t('lat')]]">
+        <input type="text" class="form-control" id="position-lat" aria-describedby="Latitude" @change="setPosition" v-model="lat" :placeholder="[[t('lat')]]">
       </div>
       <div class="input-group mb-3">
         <span class="input-group-text w-25" id="lat">Lon</span>
-        <input type="text" class="form-control" id="position-lon" aria-describedby="Longitude" v-model="lon" :placeholder="[[t('lon')]]">
+        <input type="text" class="form-control" id="position-lon" aria-describedby="Longitude" @change="setPosition" v-model="lon" :placeholder="[[t('lon')]]">
       </div>
     </div>
     <div class="row">
-      <label for="ytt">{{t('compute')}}</label>
+      <span>{{t('compute')}}</span>
       <div class="row justify-content-center">
-        <div class="col">
+        <div class="col-auto g-1">
           <button class="btn btn-secondary" @click="moonM1W">{{t('m1w')}}</button>
         </div>
-        <div class="col">
+        <div class="col-auto g-1">
           <button class="btn btn-secondary" @click="moonM1D">{{t('m1d')}}</button>
         </div>
-        <div class="col">
+        <div class="col-auto g-1">
           <button class="btn btn-primary" @click="moonToday">{{t('today')}}</button>
         </div>
-        <div class="col">
+        <div class="col-auto g-1">
           <button class="btn btn-secondary" @click="moonP1D">{{t('p1d')}}</button>
         </div>
-        <div class="col">
+        <div class="col-auto g-1">
           <button class="btn btn-secondary" @click="moonP1W">{{t('p1w')}}</button>
         </div>
-      </div>      
-      <label for="today">{{t('date')}}</label>
-      <input type='date' id="calendar" v-model="datareq" @change="moon"> 
-    </div>    
+      </div>
+    </div>
+    <div class="row mb-3">
+      <span>{{ t('date') }}</span>
+      <input type='date' class="form-control calendar" 
+      v-model="datareq" @change="moon"> 
+    </div>
     <div class="row">
       <div class="d-flex justify-content-center" id="moon"></div>
-
     </div>
     <div class="row d-flex ">
       <h4 class="order-0">{{t('ill')}} {{ill}}</h4>
@@ -61,7 +63,6 @@
 <script>
 import SunCalc from 'suncalc2';
 import * as d3 from 'd3';
-import A from 'meeusjs'
 import { useI18n } from 'vue-i18n'
 
 export default {
@@ -77,7 +78,6 @@ export default {
       today: new Date().toISOString().split('T')[0],
       datareq: new Date().toISOString().split('T')[0],
       ill: '',
-      // phs: '',
       mooninfo: {},
       rise: '',
       transit: '',
@@ -167,7 +167,6 @@ export default {
     },
     moon() {
       var o = new Date(this.datareq);
-      // //console.log(o);
       var m = SunCalc.getMoonIllumination(o);
       var x = SunCalc.getMoonTimes(this.datareq, this.lat, this.lon);
       this.mooninfo = m;
@@ -180,31 +179,6 @@ export default {
         this.riseset=true;
       }
       this.ill = (m.fraction*100).toFixed(1) + "%";
-      var dd = new Date(this.datareq);
-      var jdo = new A.JulianDay(dd);
-      //console.log("JD: ", jdo);
-      var coord = A.EclCoord.fromWgs84(this.lat,this.lon, 220);
-
-      // gets the position of the moon		
-      var tp = A.Moon.topocentricPosition(jdo, coord);
-      // print azi and alt
-      //console.log("dist:" + tp.delta); 
-
-      // gets the rise, transit and set time of the moon for today
-      var times = A.Moon.times(jdo, coord);
-
-      // print rise, transit and set in universal time
-      //console.log(times.rise);	
-      console.log("rise: " + A.Coord.secondsToHMSStr(times.rise) + ", transit: " + A.Coord.secondsToHMSStr(times.transit) + ", set: " +  A.Coord.secondsToHMSStr(times.set));
-
-      // print moon phase and illuminated
-      var suneq = A.Solar.apparentTopocentric(jdo, coord);
-      var i = A.MoonIllum.phaseAngleEq2(tp.eq, suneq);
-      var k = A.MoonIllum.illuminated(i);
-      var chi =  A.MoonIllum.positionAngle(tp.eq, suneq);
- 
-      console.log("phase:" + i*180/Math.PI + ", illuminated:" + k + ", angle:" + chi*180/Math.PI);
-
       //draw the moon phase
       this.drawMoonPhase();
 
@@ -236,6 +210,10 @@ export default {
       t.setDate(t.getDate()+7);
       this.datareq=t.toISOString().split('T')[0];
       this.moon();
+    },
+    setPosition() {
+      console.log(this.lat, this.lon);
+      this.moon();
     }
   }
 }
@@ -252,7 +230,15 @@ export default {
   cursor: pointer;
   color: #666;
 }
+.locale-changer span {
+    padding: 3px;
+
+}
 .selected {
-  color: initial;
+  color: #fff;
+}
+.calendar {
+  width: 250px;
+  margin: auto;
 }
 </style>

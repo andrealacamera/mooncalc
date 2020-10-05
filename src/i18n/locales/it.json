@@ -1,8 +1,8 @@
 {
   "language": "Lingua:", 
   "position": "Posizione",
-  "lat": "Latitudini positive per Nord",
-  "lon": "Longitudini positive per Est",
+  "lat": "Nord = valori positivi",
+  "lon": "Est = valori positivi",
   "compute": "Calcola per:",
   "m1w": "-1s",
   "m1d": "-1g",
