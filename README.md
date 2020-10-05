@@ -1,10 +1,13 @@
 # mooncalc
 In this project:
 - [Vue.js 3](https://v3.vuejs.org/)
+- [vue-i18n-next](https://github.com/intlify/vue-i18n-next)
 - [D3](https://d3js.org/)
+- [Bootstrap5](https://v5.getbootstrap.com/)
 - [SunCalc2](https://www.npmjs.com/package/suncalc2)
 
 Based on [Moon Phases](http://bl.ocks.org/bdon/e6405ebabd4f3013c342)
+
 ## Project setup
 ```
 npm install
