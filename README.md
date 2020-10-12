@@ -8,6 +8,8 @@ In this project:
 
 Based on [Moon Phases](http://bl.ocks.org/bdon/e6405ebabd4f3013c342)
 
+>Special thanks to Daniele Cipollina, GAST - Arquata Scrivia (ITALY) for the image of the Full Moon. 
+
 ## Project setup
 ```
 npm install

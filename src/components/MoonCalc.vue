@@ -1,5 +1,5 @@
 <template>
-  <div class="container moon">
+  <div class="container moon-container">
     <div class="row">
       <h1>MoonCalc</h1>
       
@@ -82,7 +82,8 @@ export default {
       rise: '',
       transit: '',
       set: '',
-      riseset: true
+      riseset: true,
+      imgUrl: require('@/assets/LP.png')
     }
   },
   computed: {
@@ -132,16 +133,16 @@ export default {
       return t;
     },
     setFill1() {
-      return (this.mooninfo.phase < 0.25 || this.mooninfo.phase > 0.75) ? "#ffffaf": "#111" ;
+      return (this.mooninfo.phase < 0.25 || this.mooninfo.phase > 0.75) ? "#ffffaa": "#111" ;
     },
     setFill2() {
-      return (this.mooninfo.phase < 0.25 || this.mooninfo.phase > 0.75) ? "#111": "#ffffaf" ;
+      return (this.mooninfo.phase < 0.25 || this.mooninfo.phase > 0.75) ? "#111": "#ffffaa" ;
     },
     setScaleX() {
       return 2*Math.abs(this.mooninfo.fraction - 0.5);
     },
     setFill3() {
-      return (this.mooninfo.phase < 0.25 || this.mooninfo.phase > 0.75) ? "#111": "#ffffaf" ;
+      return (this.mooninfo.phase < 0.25 || this.mooninfo.phase > 0.75) ? "#111": "#ffffaa" ;
     },
     setPath() {
       var arc = d3.arc().outerRadius(this.width/2);
@@ -153,17 +154,31 @@ export default {
       var svg = d3.select("#moon>svg").remove();
       // new phase!
       svg = d3.select("#moon").append("svg")
-        .attr("width", this.width+10)
-        .attr("height", this.width+10);
-      var content = svg.append("g").attr("transform",`translate(${(this.width+10)/2},${(this.width+10)/2})`);
+        .attr("width", this.width)
+        .attr("height", this.width);
+      // svg.append("defs")
+      //   .append("filter") 
+      //   .attr("id", "blur")
+      //   .append("feGaussianBlur")
+      //   .attr("stdDeviation", 6); 
+      var content = svg.append("g").attr("transform",`translate(${(this.width)/2},${(this.width)/2})`);
       var ph = content.append("g");
       ph.append("circle").attr('r', this.width/2)
-        .style("fill", this.setFill1());
+      .style("fill", this.setFill1());
       ph.append("circle").attr('r',this.width/2)
         .style("fill", this.setFill2())
+        // .attr("filter", "url(#blur)")
         .attr("transform", `scale(${this.setScaleX()},1)`);
       ph.append("path").attr("d", this.setPath())
-        .style("fill", this.setFill3());  
+        .style("fill", this.setFill3());
+      ph.append("svg:image")
+        .attr("xlink:href", this.imgUrl)
+        .attr("id", "moonID")
+        .attr("x", -this.width/2)
+        .attr("y", -this.width/2)
+        .attr("width", this.width)
+        .attr("height", this.width)
+        .style("mix-blend-mode" , "multiply");
     },
     moon() {
       var o = new Date(this.datareq);
@@ -221,10 +236,13 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.moon {
+.moon-container {
   border: 1px solid #bfbfbf;
   max-width: 500px;
   justify-content: center;
+}
+#moonID {
+  mix-blend-mode: multiply;
 }
 .locale-changer {
   cursor: pointer;
