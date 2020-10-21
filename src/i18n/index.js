@@ -15,8 +15,9 @@ export default createI18n({
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
-        hour12: true,
-        timeZoneName: 'short'
+        hour12: false,
+        timeZoneName: 'long',
+        timeZone: "UTC"
       }
     },
     'it': {
@@ -25,7 +26,8 @@ export default createI18n({
         minute: '2-digit',
         second: '2-digit',
         hour12: false,
-        timeZoneName: 'long'
+        timeZoneName: 'long',
+        timeZone: "Europe/Rome"
       }
     }
   }

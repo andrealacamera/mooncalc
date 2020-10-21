@@ -14,13 +14,44 @@
     </div>
     <div class="row">
       <label for="position" class="form-label">{{t('position')}}</label>
-      <div class="input-group">
-        <span class="input-group-text w-25" id="lat">Lat</span>
-        <input type="text" class="form-control" id="position-lat" aria-describedby="Latitude" @change="setPosition" v-model="lat" :placeholder="[[t('lat')]]">
-      </div>
       <div class="input-group mb-3">
-        <span class="input-group-text w-25" id="lat">Lon</span>
-        <input type="text" class="form-control" id="position-lon" aria-describedby="Longitude" @change="setPosition" v-model="lon" :placeholder="[[t('lon')]]">
+        <span class="input-group-text">{{t('city')}}</span>
+        <input type="text" class="form-control" aria-label="search your city" v-model="city" @keyup.enter="searchCity"> 
+        <button class="btn btn-primary" @click="searchCity">{{t('search')}}</button>
+      </div>
+      <div>
+        <div class="d-flex flex-column alert alert-success" v-if="okCity">
+          <span >{{t('okCity')}}</span>
+          <span >{{resCity}} - {{resCountry}} ({{resProv}})</span>
+          <button class="btn btn-success" @click="okCityBtn">OK</button>
+        </div>
+        <div class="d-flex flex-column alert alert-warning" v-if="warningCity">
+          <span>{{t('warningCity')}}</span>
+          <span>{{resCity}} - {{resCountry}} ({{resProv}})</span>
+          <span>{{t('CityText1')}}</span>
+          <span>{{t('CityText2')}}</span>
+          <button class="btn btn-warning" @click="warningCityBtn">OK</button>
+        </div>
+        <div class="d-flex flex-column alert alert-danger" v-if="errCity">
+          <button type="button" class="btn-close float-right" aria-label="Close" @click="errCityBtn"></button>
+          <span >{{t('errCity')}}</span>
+          <span >{{t('CityText1')}}</span>
+          <span >{{t('CityText2')}}</span>
+        </div>
+        <div class="d-flex flex-column alert alert-danger" v-if="serverB">
+          <button type="button" class="btn-close" aria-label="Close" @click="errCityBtn"></button>
+          <span >{{t('serverBusy')}}</span>
+        </div>     
+      </div>
+      <div class="d-flex mb-3">
+        <div class="input-group">
+          <span class="input-group-text w-25" id="lat">Lat</span>
+          <input type="text" class="form-control" id="position-lat" aria-describedby="Latitude" @change="setPosition" v-model="lat">
+        </div>
+        <div class="input-group">
+          <span class="input-group-text w-25" id="lat">Lon</span>
+          <input type="text" class="form-control" id="position-lon" aria-describedby="Longitude" @change="setPosition" v-model="lon">
+        </div>
       </div>
     </div>
     <div class="row">
@@ -54,7 +85,7 @@
     <div class="row d-flex ">
       <h4 class="order-0">{{t('ill')}} {{ill}}</h4>
       <h4 class="order-1">{{t('phase')}} {{phs}} </h4>
-      <span :class="{'order-2' : riseset, 'order-3' : !riseset}">{{t('rise')}} {{rise}} </span>
+      <span :class="{'order-2' : riseset, 'order-3' : !riseset}">{{t('rise')}} {{rise}}</span>
       <span :class="{'order-2' : !riseset, 'order-3' : riseset}">{{t('set')}} {{set}}</span>
     </div>
   </div>
@@ -64,6 +95,7 @@
 import SunCalc from 'suncalc2';
 import * as d3 from 'd3';
 import { useI18n } from 'vue-i18n'
+import axios from 'axios'
 
 export default {
   name: 'MoonCalc',
@@ -73,8 +105,10 @@ export default {
   data() {
     return {
       width: 200,
-      lat: 44.69064, 
-      lon: 8.88480,
+      lat: 44.68478, 
+      lon: 8.88901,
+      lat_tmp: null,
+      lon_tmp: null,
       today: new Date().toISOString().split('T')[0],
       datareq: new Date().toISOString().split('T')[0],
       ill: '',
@@ -83,7 +117,15 @@ export default {
       transit: '',
       set: '',
       riseset: true,
-      imgUrl: require('@/assets/LP.png')
+      imgUrl: require('@/assets/LP.png'),
+      city: 'Arquata Scrivia, IT',
+      okCity: false,
+      resCity: '',
+      resCountry: '',
+      resProv: '',
+      warningCity: false,
+      errCity: false,
+      serverB: false
     }
   },
   computed: {
@@ -127,22 +169,90 @@ export default {
       this.locale=l;
       this.moon();
     },
+    searchCity() {
+      if (this.city.length == 0) {
+        return
+      }
+      axios( {
+        method: 'GET',
+        header: {
+          'Content-Type': 'application/json'
+        },
+        url:'https://geocode.xyz/'+encodeURI(this.city)+'/?json=1'})
+      .then(res => {
+        console.log(res.data);
+        if (res.data.latt && res.data.longt) {
+          if (res.data.standard.confidence > 0) {
+            this.warningCity = true;
+            this.okCity = false;
+            this.errCity = false;
+            this.serverB = false;
+            if (res.data.standard.confidence > 0.5) {
+              this.okCity = true;
+              this.warningCity = false;
+              this.errCity = false;
+              this.serverB = false;
+            } 
+            this.resCity = res.data.standard.city || '';
+            this.resCountry = res.data.standard.countryname || '';
+            this.resProv = res.data.standard.prov;
+            this.lat_tmp = res.data.latt;
+            this.lon_tmp = res.data.longt;
+          }
+          else {
+              this.errCity = true;
+              this.okCity = false;
+              this.warningCity = false;
+              this.serverB = false;
+          }
+        }
+      })
+      .catch(err => {
+        if(err.response.status === 403) {
+          this.serverB = true;
+          this.okCity = false;
+          this.warningCity = false;
+          this.errCity = false;
+        } 
+        else {
+          this.errCity = true;
+          this.okCity = false;
+          this.warningCity = false;
+          this.serverB = false;
+        }
+      });
+    },
+    okCityBtn() {
+      this.okCity = false;
+      this.lat = this.lat_tmp;
+      this.lon = this.lon_tmp;
+      this.setPosition();
+    },
+    warningCityBtn() {
+      this.warningCity = false;
+      this.lat = this.lat_tmp;
+      this.lon = this.lon_tmp;
+      this.setPosition();
+    },
+    errCityBtn() {
+      this.errCity = false;
+    },
     tomorrow() {
       const t = new Date(this.datareq);
       t.setDate(t.getDate()+1);
       return t;
     },
     setFill1() {
-      return (this.mooninfo.phase < 0.25 || this.mooninfo.phase > 0.75) ? "#ffffaa": "#111" ;
+      return (this.mooninfo.phase < 0.25 || this.mooninfo.phase > 0.75) ? "#ffffdd": "#333" ;
     },
     setFill2() {
-      return (this.mooninfo.phase < 0.25 || this.mooninfo.phase > 0.75) ? "#111": "#ffffaa" ;
+      return (this.mooninfo.phase < 0.25 || this.mooninfo.phase > 0.75) ? "#333": "#ffffdd" ;
     },
     setScaleX() {
       return 2*Math.abs(this.mooninfo.fraction - 0.5);
     },
     setFill3() {
-      return (this.mooninfo.phase < 0.25 || this.mooninfo.phase > 0.75) ? "#111": "#ffffaa" ;
+      return (this.mooninfo.phase < 0.25 || this.mooninfo.phase > 0.75) ? "#333": "#ffffdd" ;
     },
     setPath() {
       var arc = d3.arc().outerRadius(this.width/2);
@@ -227,7 +337,6 @@ export default {
       this.moon();
     },
     setPosition() {
-      console.log(this.lat, this.lon);
       this.moon();
     }
   }
