@@ -1,9 +1,5 @@
 <template>
   <div class="container moon-container">
-    <div class="row">
-      <h1>MoonCalc</h1>
-      
-    </div>
     <div class="row justify-content-end" >
       <div class="col-auto">
         {{t('language')}} 
@@ -94,8 +90,8 @@
 <script>
 import SunCalc from 'suncalc2';
 import * as d3 from 'd3';
-import { useI18n } from 'vue-i18n'
-import axios from 'axios'
+import { useI18n } from 'vue-i18n';
+import axios from 'axios';
 
 export default {
   name: 'MoonCalc',
@@ -117,7 +113,8 @@ export default {
       transit: '',
       set: '',
       riseset: true,
-      imgUrl: require('@/assets/LP.png'),
+      // imgUrl: require('@/assets/LP.png'),
+      imgUrl: '/wordpress/wp-content/plugins/wp-vue/img/LP.png',
       city: 'Arquata Scrivia, IT',
       okCity: false,
       resCity: '',
@@ -347,8 +344,12 @@ export default {
 <style scoped>
 .moon-container {
   border: 1px solid #bfbfbf;
-  max-width: 500px;
+  /* max-width: 500px; */
   justify-content: center;
+}
+section[class^="post-"] .row {
+  margin-top: .5em;
+  margin-bottom: .5em;
 }
 #moonID {
   mix-blend-mode: multiply;
