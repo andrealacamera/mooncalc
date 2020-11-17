@@ -177,7 +177,6 @@ export default {
         },
         url:'https://geocode.xyz/'+encodeURI(this.city)+'/?json=1'})
       .then(res => {
-        console.log(res.data);
         if (res.data.latt && res.data.longt) {
           if (res.data.standard.confidence > 0) {
             this.warningCity = true;
